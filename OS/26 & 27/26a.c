@@ -1,3 +1,11 @@
+// Written by
+// Aravind Reddy V
+
+// Send and recieve messages via message queue
+// -s message to Send
+// -r to recieve
+
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +46,8 @@ static void recv_message(int mqid, int msgtype) {
     
     //  MSG_NOERROR  is  specified,  then the message text will be truncated
     // (and the truncated part will be lost) - from man page
-    if( msgrcv(mqid, (void *) &msg, MAX_MSG_SIZE, msgtype, MSG_NOERROR | IPC_NOWAIT) == -1 ) {
+    // if( msgrcv(mqid, (void *) &msg, MAX_MSG_SIZE, msgtype, MSG_NOERROR | IPC_NOWAIT) == -1 ) {
+    if( msgrcv(mqid, (void *) &msg, MAX_MSG_SIZE, msgtype, 0) == -1 ) {
         if(errno != ENOMSG) {
             perror("Error in msgrcv.");
             exit(EXIT_FAILURE);
