@@ -4,16 +4,15 @@
 
 // ಠ_ಠ
 
-#include <sys/types.h>
-#include <sys/socket.h>
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
 #include <unistd.h>
 
-#include <errno.h>
 
-#define PORT 8000
+#define PORT 8085
 
 void pex(const char* message) {
     // print error and exit.
@@ -24,13 +23,13 @@ void pex(const char* message) {
 
 int createSocket() {
     int sockfd;
-    if((sockfd == socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         pex("Error creating socket.");
     }
-    
+
     // reusing socket
     int optval = 1;
-    if(setsocketopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval)) == -1) {
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval)) == -1) {
         pex("Error in reusing socket.");
     }
     
@@ -80,23 +79,22 @@ int main(int argc, char* argv[]) {
     int sockfd = createSocket();
     
     int connectionfd;
-    char message[256];
+    char message[1028];
     int message_size;
     
     while(1) {
         connectionfd = createConnection(sockfd);
         
         // echo server.
-        message_size = recv(connectionfd, message, (strlen(message) + 1) * sizeof(char), 0);
+        message_size = recv(connectionfd, message, sizeof(message), 0);
         
         while(message_size) {
-            
+            printf("From client: %s\n", message);
             if(message_size == -1) pex("Error while recieving message from client.");
             if(send(connectionfd, message, message_size, 0) == -1) pex("Error transmitting to client.");
-            
+            memset(message, 0, sizeof(message));
             message_size = recv(connectionfd, message, (strlen(message) + 1) * sizeof(char), 0);
         }
-        
         if(message_size == 0) closeConnection(connectionfd);
     }
     
